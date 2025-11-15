@@ -7,7 +7,7 @@ const DataContext = createContext(undefined);
 export const DataProvider = ({ children }) => {
  const [courses, setCourses] = useState([]);
  const [instructors, setInstructors] = useState([]);
- const [loading, setLoading] = useState(true);
+ const [loading, setLoading] = useState(false);
 
  useEffect(() => {
    fetchInitialData();
@@ -23,6 +23,7 @@ export const DataProvider = ({ children }) => {
        return;
      }
 
+     setLoading(true);
      const [coursesData, instructorsData] = await Promise.all([
        apiCall('/courses'),
        apiCall('/users/instructors'),
@@ -208,16 +209,11 @@ export const DataProvider = ({ children }) => {
    return Array.from(instructorIds).map(id => getInstructorById(id)).filter(Boolean);
  };
 
- if (loading) {
-   return <div className="flex items-center justify-center min-h-screen">
-     <div className="text-lg">Loading data...</div>
-   </div>;
- }
-
  return (
    <DataContext.Provider value={{ 
        courses, 
        instructors, 
+       loading,
        addCourse, 
        updateCourse, 
        addLecture, 

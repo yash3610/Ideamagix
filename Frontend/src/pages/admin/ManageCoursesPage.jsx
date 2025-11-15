@@ -29,9 +29,10 @@ const ManageCoursesPage = () => {
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {courses.map(course => {
-          const assignedInstructors = getInstructorsForCourse(course.id);
+          const courseId = course._id || course.id;
+          const assignedInstructors = getInstructorsForCourse(courseId);
           return (
-            <Card key={course.id} className="flex flex-col">
+            <Card key={courseId} className="flex flex-col">
               <CardHeader className="p-0">
                 <img src={course.imageUrl} alt={course.name} className="rounded-t-lg object-cover h-40 w-full" />
               </CardHeader>
@@ -49,10 +50,10 @@ const ManageCoursesPage = () => {
                 <CardDescription className="mt-1 text-xs line-clamp-2">{course.description}</CardDescription>
               </CardContent>
               <CardFooter className="p-4 pt-0 grid grid-cols-3 gap-2">
-                <Button variant="outline" size="sm" onClick={() => navigate(`/admin/edit-course/${course.id}`)}>
+                <Button variant="outline" size="sm" onClick={() => navigate(`/admin/edit-course/${courseId}`)}>
                   <Edit className="h-4 w-4 mr-1" /> Edit
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate(`/admin/courses/${course.id}`)}>
+                <Button variant="outline" size="sm" onClick={() => navigate(`/admin/courses/${courseId}`)}>
                   <BookOpen className="h-4 w-4 mr-1" /> Batches
                 </Button>
                 <Button size="sm" onClick={() => handleOpenModal(course)}>

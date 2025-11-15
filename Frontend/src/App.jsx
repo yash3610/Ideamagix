@@ -97,7 +97,7 @@ function App() {
       </Route>
 
       {/* Fallback Route */}
-      <Route path="*" element={<Navigate to={isAuthenticated ? (user.role === 'admin' ? '/admin' : '/instructor') : '/login'} replace />} />
+      <Route path="*" element={<Navigate to={isAuthenticated && user ? (user.role === 'admin' ? '/admin/dashboard' : '/instructor/dashboard') : '/login'} replace />} />
     </Routes>
   );
 }
