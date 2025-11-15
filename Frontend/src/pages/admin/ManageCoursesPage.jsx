@@ -29,15 +29,26 @@ const ManageCoursesPage = () => {
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {courses.map(course => {
-          const assignedInstructors = getInstructorsForCourse(course.id);
+          // ✅ दोन्ही _id आणि id handle करा
+          const courseId = course._id || course.id;
+          const assignedInstructors = getInstructorsForCourse(courseId);
+          
           return (
-            <Card key={course.id} className="flex flex-col">
+            <Card key={courseId} className="flex flex-col">
               <CardHeader className="p-0">
                 <img src={course.imageUrl} alt={course.name} className="rounded-t-lg object-cover h-40 w-full" />
               </CardHeader>
               <CardContent className="p-4 flex-grow">
                 <div className="flex justify-between items-start">
-                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${course.level === 'Beginner' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : course.level === 'Intermediate' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`}>{course.level}</span>
+                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                    course.level === 'Beginner' 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' 
+                      : course.level === 'Intermediate' 
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' 
+                      : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
+                  }`}>
+                    {course.level}
+                  </span>
                   {assignedInstructors.length > 0 && (
                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <UserCheck className="h-4 w-4" />
@@ -49,10 +60,11 @@ const ManageCoursesPage = () => {
                 <CardDescription className="mt-1 text-xs line-clamp-2">{course.description}</CardDescription>
               </CardContent>
               <CardFooter className="p-4 pt-0 grid grid-cols-3 gap-2">
-                <Button variant="outline" size="sm" onClick={() => navigate(`/admin/edit-course/${course.id}`)}>
+                {/* ✅ courseId वापरा */}
+                <Button variant="outline" size="sm" onClick={() => navigate(`/admin/edit-course/${courseId}`)}>
                   <Edit className="h-4 w-4 mr-1" /> Edit
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => navigate(`/admin/courses/${course.id}`)}>
+                <Button variant="outline" size="sm" onClick={() => navigate(`/admin/courses/${courseId}`)}>
                   <BookOpen className="h-4 w-4 mr-1" /> Batches
                 </Button>
                 <Button size="sm" onClick={() => handleOpenModal(course)}>

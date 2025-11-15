@@ -9,8 +9,10 @@ const AllInstructorsPage = () => {
     let assigned = null;
     courses.forEach((course) => {
       course.lectures.forEach(lecture => {
-        if (lecture.instructorId === instructorId) {
-          if (!assigned || lecture.date > assigned.lectureDate) {
+        // ✅ दोन्ही _id आणि id check करा
+        const lectureInstructorId = lecture.instructorId?._id || lecture.instructorId;
+        if (lectureInstructorId === instructorId) {
+          if (!assigned || new Date(lecture.date) > new Date(assigned.lectureDate)) {
             assigned = { courseName: course.name, lectureDate: lecture.date };
           }
         }
@@ -35,28 +37,43 @@ const AllInstructorsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {instructors.map(instructor => {
-                const assignedInfo = getAssignedCourse(instructor.id);
-                return (
-                  <tr key={instructor.id} className="border-b">
-                    <td className="px-6 py-4 font-medium whitespace-nowrap flex items-center gap-3">
-                      <img src={instructor.avatarUrl} alt={instructor.name} className="h-8 w-8 rounded-full" />
-                      {instructor.name}
-                    </td>
-                    <td className="px-6 py-4">{instructor.email}</td>
-                    <td className="px-6 py-4">
-                      {assignedInfo ? (
-                        <div>
-                          <p className="font-semibold">{assignedInfo.courseName}</p>
-                          <p className="text-xs text-muted-foreground">Next on: {assignedInfo.lectureDate.toLocaleDateString()}</p>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">Not Assigned</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {instructors.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="px-6 py-4 text-center text-muted-foreground">
+                    No instructors found
+                  </td>
+                </tr>
+              ) : (
+                instructors.map(instructor => {
+                  // ✅ _id वापरा
+                  const instructorId = instructor._id || instructor.id;
+                  const assignedInfo = getAssignedCourse(instructorId);
+                  
+                  return (
+                    <tr key={instructorId} className="border-b">
+                      <td className="px-6 py-4 font-medium whitespace-nowrap flex items-center gap-3">
+                        {instructor.avatarUrl && (
+                          <img src={instructor.avatarUrl} alt={instructor.name} className="h-8 w-8 rounded-full" />
+                        )}
+                        {instructor.name}
+                      </td>
+                      <td className="px-6 py-4">{instructor.email}</td>
+                      <td className="px-6 py-4">
+                        {assignedInfo ? (
+                          <div>
+                            <p className="font-semibold">{assignedInfo.courseName}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Next on: {new Date(assignedInfo.lectureDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">Not Assigned</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

@@ -2,6 +2,10 @@ const API_URL = 'http://localhost:3001/api';
 
 export const getToken = () => localStorage.getItem('token');
 
+export const setToken = (token) => localStorage.setItem('token', token);
+
+export const removeToken = () => localStorage.removeItem('token');
+
 export const apiCall = async (endpoint, options = {}) => {
   const token = getToken();
   const headers = {
@@ -13,14 +17,28 @@ export const apiCall = async (endpoint, options = {}) => {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || 'Request failed');
+    const data = await response.json();
+    
+    if (!response.ok) {
+      // Handle unauthorized errors
+      if (response.status === 401) {
+        removeToken();
+        window.location.href = '/login';
+      }
+      throw new Error(data.message || 'Request failed');
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('API Call Error:', error);
+    throw error;
   }
-  return data;
 };
+
+export default { apiCall, getToken, setToken, removeToken };

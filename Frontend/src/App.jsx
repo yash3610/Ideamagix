@@ -96,8 +96,20 @@ function App() {
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
-      {/* Fallback Route */}
-      <Route path="*" element={<Navigate to={isAuthenticated ? (user.role === 'admin' ? '/admin' : '/instructor') : '/login'} replace />} />
+      {/* Fallback Route - ✅ FIXED */}
+      <Route 
+        path="*" 
+        element={
+          <Navigate 
+            to={
+              isAuthenticated && user 
+                ? (user.role === 'admin' ? '/admin/dashboard' : '/instructor/dashboard')
+                : '/login'
+            } 
+            replace 
+          />
+        } 
+      />
     </Routes>
   );
 }

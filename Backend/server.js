@@ -17,8 +17,12 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Middleware
-app.use(cors());
+// CORS configuration - Frontend la access dyaycha
+app.use(cors({
+  origin: 'http://localhost:5173', // Vite default port
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -37,7 +41,7 @@ app.get('/api/health', (req, res) => {
 app.use(errorHandler);
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001; // Changed to 3001
 const server = app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`🌐 API available at http://localhost:${PORT}/api`);
@@ -49,8 +53,8 @@ server.on('error', (error) => {
     console.error(`\n❌ ERROR: Port ${PORT} is already in use`);
     console.error('\n📝 Please try one of these solutions:');
     console.error(`   1. Stop the process using port ${PORT}`);
-    console.error('      macOS/Linux: lsof -ti:5000 | xargs kill -9');
-    console.error('      Windows: netstat -ano | findstr :5000');
+    console.error(`      macOS/Linux: lsof -ti:${PORT} | xargs kill -9`);
+    console.error(`      Windows: netstat -ano | findstr :${PORT}`);
     console.error(`   2. Change the port in .env file:`);
     console.error('      PORT=3000');
     console.error('   3. Use a different port:');

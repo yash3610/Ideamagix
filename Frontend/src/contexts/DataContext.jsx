@@ -7,7 +7,7 @@ const DataContext = createContext(undefined);
 export const DataProvider = ({ children }) => {
  const [courses, setCourses] = useState([]);
  const [instructors, setInstructors] = useState([]);
- const [loading, setLoading] = useState(true);
+ const [loading, setLoading] = useState(false); // ✅ true ऐवजी false
 
  useEffect(() => {
    fetchInitialData();
@@ -22,6 +22,8 @@ export const DataProvider = ({ children }) => {
        setLoading(false);
        return;
      }
+
+     setLoading(true); // ✅ फक्त data fetch करताना loading true करा
 
      const [coursesData, instructorsData] = await Promise.all([
        apiCall('/courses'),
@@ -40,7 +42,8 @@ export const DataProvider = ({ children }) => {
    }
  };
 
- // --- User/Instructor Methods ---
+ // ... बाकीचा code तसाच राहील (addInstructor, updateInstructor, etc.)
+
  const addInstructor = async (instructorData) => {
    try {
      const newInstructor = await apiCall('/auth/register', {
@@ -51,7 +54,7 @@ export const DataProvider = ({ children }) => {
      return newInstructor;
    } catch (error) {
      console.error('Error adding instructor:', error);
-     throw error; // Re-throw for error handling in components
+     throw error;
    }
  };
 
@@ -76,7 +79,6 @@ export const DataProvider = ({ children }) => {
    return instructors.find(i => i._id === id || i.id === id);
  };
 
- // --- Course Methods ---
  const addCourse = async (courseData) => {
    try {
      const newCourse = await apiCall('/courses', {
@@ -112,7 +114,6 @@ export const DataProvider = ({ children }) => {
    return courses.find(c => c._id === id || c.id === id);
  };
 
- // --- Lecture Methods ---
  const addLecture = async (courseId, lectureData) => {
    try {
      const updatedCourse = await apiCall(`/courses/${courseId}/lectures`, {
@@ -147,7 +148,6 @@ export const DataProvider = ({ children }) => {
    }
  };
 
- // --- Getter Methods ---
  const getLecturesByInstructor = (instructorId) => {
    const assignedLectures = [];
    courses.forEach(course => {
@@ -208,16 +208,18 @@ export const DataProvider = ({ children }) => {
    return Array.from(instructorIds).map(id => getInstructorById(id)).filter(Boolean);
  };
 
- if (loading) {
-   return <div className="flex items-center justify-center min-h-screen">
-     <div className="text-lg">Loading data...</div>
-   </div>;
- }
+ // ✅ Loading screen काढून टाकला
+ // if (loading) {
+ //   return <div className="flex items-center justify-center min-h-screen">
+ //     <div className="text-lg">Loading data...</div>
+ //   </div>;
+ // }
 
  return (
    <DataContext.Provider value={{ 
        courses, 
        instructors, 
+       loading,  // ✅ loading state provide करा
        addCourse, 
        updateCourse, 
        addLecture, 

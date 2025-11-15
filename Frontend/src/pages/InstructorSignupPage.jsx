@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/Card';
@@ -12,19 +12,33 @@ const InstructorSignupPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
   const { signup } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (password !== confirmPassword) {
       toast.error('Passwords do not match.');
       return;
     }
+    
     if (!name || !email || !password) {
       toast.error('Please fill in all required fields.');
       return;
     }
-    signup({ name, email, password, avatarUrl });
+
+    setLoading(true);
+    try {
+      await signup({ name, email, password, avatarUrl });
+      // Navigate to login page after successful signup
+      navigate('/login');
+    } catch (error) {
+      console.error('Signup error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,19 +52,46 @@ const InstructorSignupPage = () => {
           <CardContent className="grid gap-4">
             <div className="space-y-2">
               <label htmlFor="name">Full Name</label>
-              <input id="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-2 border rounded-md bg-transparent" required />
+              <input 
+                id="name" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+                className="w-full p-2 border rounded-md bg-transparent" 
+                required 
+              />
             </div>
             <div className="space-y-2">
               <label htmlFor="email">Email</label>
-              <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-2 border rounded-md bg-transparent" required />
+              <input 
+                id="email" 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                className="w-full p-2 border rounded-md bg-transparent" 
+                required 
+              />
             </div>
             <div className="space-y-2">
               <label htmlFor="password">Password</label>
-              <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2 border rounded-md bg-transparent" required />
+              <input 
+                id="password" 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                className="w-full p-2 border rounded-md bg-transparent" 
+                required 
+              />
             </div>
             <div className="space-y-2">
               <label htmlFor="confirmPassword">Confirm Password</label>
-              <input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full p-2 border rounded-md bg-transparent" required />
+              <input 
+                id="confirmPassword" 
+                type="password" 
+                value={confirmPassword} 
+                onChange={(e) => setConfirmPassword(e.target.value)} 
+                className="w-full p-2 border rounded-md bg-transparent" 
+                required 
+              />
             </div>
             <div className="space-y-2">
               <label>Profile Picture (Optional)</label>
@@ -58,7 +99,9 @@ const InstructorSignupPage = () => {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full">Create Account</Button>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </Button>
             <p className="text-xs text-center text-muted-foreground">
               Already have an account? <Link to="/login" className="text-primary hover:underline">Log in</Link>
             </p>

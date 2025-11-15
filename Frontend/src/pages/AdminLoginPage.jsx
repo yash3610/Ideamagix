@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/Card';
@@ -9,7 +9,6 @@ const AdminLoginPage = () => {
   const [email, setEmail] = useState('admin@test.com');
   const [password, setPassword] = useState('password123');
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -17,10 +16,7 @@ const AdminLoginPage = () => {
       toast.error('Please enter both email and password.');
       return;
     }
-    const success = login(email, password);
-    if (!success) {
-      // Error toast is handled in auth context
-    }
+    login(email, password);
   };
 
   return (
