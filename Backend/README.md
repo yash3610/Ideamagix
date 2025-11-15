@@ -387,6 +387,32 @@ const response = await fetch(`${API_URL}/courses`, {
 2. Verify `.env` file exists and has correct `MONGODB_URI`
 3. Check that you can connect to MongoDB
 
+### Error: "listen EADDRINUSE: address already in use :::5000"
+
+**Cause:** Port 5000 is already being used by another process.
+
+**Solution:**
+1. **Find and stop the process using port 5000:**
+   ```bash
+   # macOS/Linux
+   lsof -ti:5000 | xargs kill -9
+   
+   # Windows (find process ID first)
+   netstat -ano | findstr :5000
+   # Then kill it using the PID
+   taskkill /PID <process_id> /F
+   ```
+
+2. **Or use a different port:**
+   - Update `.env` file:
+     ```env
+     PORT=3000
+     ```
+   - Or set it temporarily:
+     ```bash
+     PORT=3000 npm run dev
+     ```
+
 ## 📄 License
 
 ISC

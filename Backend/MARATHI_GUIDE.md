@@ -310,6 +310,32 @@ const getCourses = async () => {
 2. `.env` file आहे का आणि `MONGODB_URI` योग्य आहे का ते तपासा
 3. MongoDB ला connect होत आहे का ते तपासा
 
+### Error: "listen EADDRINUSE: address already in use :::5000"
+
+**कारण:** Port 5000 आधीच वापरात आहे दुसऱ्या process ने.
+
+**उपाय:**
+1. **Port 5000 वापरणारी process बंद करा:**
+   ```bash
+   # macOS/Linux
+   lsof -ti:5000 | xargs kill -9
+   
+   # Windows (पहिले process ID शोधा)
+   netstat -ano | findstr :5000
+   # नंतर ती PID वापरून kill करा
+   taskkill /PID <process_id> /F
+   ```
+
+2. **किंवा वेगळा port वापरा:**
+   - `.env` file मध्ये बदल करा:
+     ```env
+     PORT=3000
+     ```
+   - किंवा तात्पुरता port set करा:
+     ```bash
+     PORT=3000 npm run dev
+     ```
+
 ---
 
 ## ✅ Summary
