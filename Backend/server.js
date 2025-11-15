@@ -38,8 +38,28 @@ app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🌐 API available at http://localhost:${PORT}/api`);
+});
+
+// Handle port already in use error
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`\n❌ ERROR: Port ${PORT} is already in use`);
+    console.error('\n📝 Please try one of these solutions:');
+    console.error(`   1. Stop the process using port ${PORT}`);
+    console.error('      macOS/Linux: lsof -ti:5000 | xargs kill -9');
+    console.error('      Windows: netstat -ano | findstr :5000');
+    console.error(`   2. Change the port in .env file:`);
+    console.error('      PORT=3000');
+    console.error('   3. Use a different port:');
+    console.error('      PORT=3000 npm run dev\n');
+    process.exit(1);
+  } else {
+    console.error('Server error:', error);
+    process.exit(1);
+  }
 });
 
 export default app;
