@@ -1,146 +1,250 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { courses as initialCourses, instructors as initialInstructors, admins } from '../utils/data';
-import { faker } from '@faker-js/faker';
+import { apiCall, getToken } from '../config/api';
 
 const DataContext = createContext(undefined);
 
 export const DataProvider = ({ children }) => {
-  const [courses, setCourses] = useState(initialCourses);
-  const [instructors, setInstructors] = useState(initialInstructors);
+ const [courses, setCourses] = useState([]);
+ const [instructors, setInstructors] = useState([]);
+ const [loading, setLoading] = useState(true);
 
-  // --- User/Instructor Methods ---
-  const addInstructor = (instructorData) => {
-    const existing = instructors.find(i => i.email === instructorData.email);
-    if (existing) return null;
+ useEffect(() => {
+   fetchInitialData();
+ }, []);
 
-    const newInstructor = {
-      ...instructorData,
-      id: faker.string.uuid(),
-      role: 'instructor',
-    };
-    setInstructors(prev => [...prev, newInstructor]);
-    return newInstructor;
-  };
+ const fetchInitialData = async () => {
+   try {
+     // ✅ Check if user is logged in first
+     const token = getToken();
+     if (!token) {
+       console.log('No token found, skipping data fetch');
+       setLoading(false);
+       return;
+     }
 
-  const updateInstructor = (instructorId, updatedData) => {
-    let updatedInstructor = null;
-    setInstructors(prev => prev.map(i => {
-      if (i.id === instructorId) {
-        updatedInstructor = { ...i, ...updatedData };
-        return updatedInstructor;
-      }
-      return i;
-    }));
-    return updatedInstructor;
-  };
+     const [coursesData, instructorsData] = await Promise.all([
+       apiCall('/courses'),
+       apiCall('/users/instructors'),
+     ]);
+     setCourses(coursesData);
+     setInstructors(instructorsData);
+   } catch (error) {
+     console.error('Error fetching initial data:', error);
+     // ✅ Clear invalid token if unauthorized
+     if (error.message.includes('authorized') || error.message.includes('token')) {
+       localStorage.removeItem('token');
+     }
+   } finally {
+     setLoading(false);
+   }
+ };
 
-  const findUserByCredentials = (email, password) => {
-    const allUsers = [...instructors, ...admins];
-    return allUsers.find(u => u.email === email && u.password === password);
-  };
-  
-  const getUserById = (id) => {
-    const allUsers = [...instructors, ...admins];
-    return allUsers.find(u => u.id === id);
-  };
+ // --- User/Instructor Methods ---
+ const addInstructor = async (instructorData) => {
+   try {
+     const newInstructor = await apiCall('/auth/register', {
+       method: 'POST',
+       body: JSON.stringify(instructorData),
+     });
+     setInstructors(prev => [...prev, newInstructor]);
+     return newInstructor;
+   } catch (error) {
+     console.error('Error adding instructor:', error);
+     throw error; // Re-throw for error handling in components
+   }
+ };
 
-  // --- Course Methods ---
-  const addCourse = (courseData) => {
-    const newCourse = {
-      ...courseData,
-      id: faker.string.uuid(),
-      lectures: [],
-    };
-    setCourses(prev => [...prev, newCourse]);
-    return newCourse;
-  };
+ const updateInstructor = async (instructorId, updatedData) => {
+   try {
+     const updatedInstructor = await apiCall('/users/profile', {
+       method: 'PUT',
+       body: JSON.stringify(updatedData),
+     });
+     
+     setInstructors(prev => prev.map(i => 
+       i._id === instructorId ? updatedInstructor : i
+     ));
+     return updatedInstructor;
+   } catch (error) {
+     console.error('Error updating instructor:', error);
+     throw error;
+   }
+ };
 
-  const updateCourse = (courseId, updatedData) => {
-    setCourses(prev => prev.map(c => c.id === courseId ? { ...c, ...updatedData } : c));
-  };
+ const getInstructorById = (id) => {
+   return instructors.find(i => i._id === id || i.id === id);
+ };
 
-  // --- Lecture Methods ---
-  const addLecture = (courseId, lectureData) => {
-    const newLecture = {
-      ...lectureData,
-      id: faker.string.uuid(),
-      courseId,
-    };
-    setCourses(prev => prev.map(c => c.id === courseId ? { ...c, lectures: [...c.lectures, newLecture] } : c));
-  };
+ // --- Course Methods ---
+ const addCourse = async (courseData) => {
+   try {
+     const newCourse = await apiCall('/courses', {
+       method: 'POST',
+       body: JSON.stringify(courseData),
+     });
+     setCourses(prev => [...prev, newCourse]);
+     return newCourse;
+   } catch (error) {
+     console.error('Error adding course:', error);
+     throw error;
+   }
+ };
 
-  const assignLecture = (lectureId, courseId, instructorId) => {
-    setCourses(prev => prev.map(c => 
-      c.id === courseId 
-        ? { ...c, lectures: c.lectures.map(l => l.id === lectureId ? { ...l, instructorId } : l) }
-        : c
-    ));
-  };
+ const updateCourse = async (courseId, updatedData) => {
+   try {
+     const updatedCourse = await apiCall(`/courses/${courseId}`, {
+       method: 'PUT',
+       body: JSON.stringify(updatedData),
+     });
+     
+     setCourses(prev => prev.map(c => 
+       c._id === courseId ? updatedCourse : c
+     ));
+     return updatedCourse;
+   } catch (error) {
+     console.error('Error updating course:', error);
+     throw error;
+   }
+ };
 
-  // --- Getter Methods ---
-  const getInstructorById = (id) => instructors.find(i => i.id === id);
-  const getCourseById = (id) => courses.find(c => c.id === id);
+ const getCourseById = (id) => {
+   return courses.find(c => c._id === id || c.id === id);
+ };
 
-  const getLecturesByInstructor = (instructorId) => {
-    const assignedLectures = [];
-    courses.forEach(course => {
-      course.lectures.forEach(lecture => {
-        if (lecture.instructorId === instructorId) {
-          assignedLectures.push({ ...lecture, courseName: course.name });
-        }
-      });
-    });
-    return assignedLectures.sort((a, b) => new Date(a.date) - new Date(b.date));
-  };
+ // --- Lecture Methods ---
+ const addLecture = async (courseId, lectureData) => {
+   try {
+     const updatedCourse = await apiCall(`/courses/${courseId}/lectures`, {
+       method: 'POST',
+       body: JSON.stringify(lectureData),
+     });
+     
+     setCourses(prev => prev.map(c => 
+       c._id === courseId ? updatedCourse : c
+     ));
+     return updatedCourse;
+   } catch (error) {
+     console.error('Error adding lecture:', error);
+     throw error;
+   }
+ };
 
-  const getUnassignedLectures = (courseId = null) => {
-    let lecturesToFilter = courseId 
-      ? courses.find(c => c.id === courseId)?.lectures || [] 
-      : courses.flatMap(c => c.lectures);
+ const assignLecture = async (lectureId, courseId, instructorId) => {
+   try {
+     const updatedCourse = await apiCall('/lectures/assign', {
+       method: 'PUT',
+       body: JSON.stringify({ lectureId, courseId, instructorId }),
+     });
+     
+     setCourses(prev => prev.map(c => 
+       c._id === courseId ? updatedCourse : c
+     ));
+     return updatedCourse;
+   } catch (error) {
+     console.error('Error assigning lecture:', error);
+     throw error;
+   }
+ };
 
-    return lecturesToFilter
-      .filter(lecture => !lecture.instructorId)
-      .map(lecture => {
-        const courseName = courseId ? courses.find(c => c.id === courseId).name : courses.find(c => c.id === lecture.courseId).name;
-        return { ...lecture, courseName };
-      })
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-  };
-  
-  const getAllLectures = () => {
-    return courses.flatMap(course => 
-      course.lectures.map(lecture => ({ ...lecture, courseName: course.name }))
-    ).sort((a, b) => new Date(a.date) - new Date(b.date));
-  };
+ // --- Getter Methods ---
+ const getLecturesByInstructor = (instructorId) => {
+   const assignedLectures = [];
+   courses.forEach(course => {
+     if (course.lectures && Array.isArray(course.lectures)) {
+       course.lectures.forEach(lecture => {
+         const lectureInstructorId = lecture.instructorId?._id || lecture.instructorId;
+         if (lectureInstructorId === instructorId) {
+           assignedLectures.push({ 
+             ...lecture, 
+             courseName: course.name,
+             courseId: course._id 
+           });
+         }
+       });
+     }
+   });
+   return assignedLectures.sort((a, b) => new Date(a.date) - new Date(b.date));
+ };
 
-  const getInstructorsForCourse = (courseId) => {
-    const course = courses.find(c => c.id === courseId);
-    if (!course) return [];
-    const instructorIds = new Set(course.lectures.map(l => l.instructorId).filter(Boolean));
-    return Array.from(instructorIds).map(id => getInstructorById(id));
-  };
+ const getUnassignedLectures = (courseId = null) => {
+   let lecturesToFilter = courseId 
+     ? courses.find(c => c._id === courseId)?.lectures || [] 
+     : courses.flatMap(c => c.lectures || []);
 
-  return (
-    <DataContext.Provider value={{ 
-        courses, instructors, addCourse, updateCourse, addLecture, assignLecture, 
-        getInstructorById, getCourseById, getLecturesByInstructor, getUnassignedLectures, 
-        getAllLectures, getInstructorsForCourse, addInstructor, updateInstructor, 
-        findUserByCredentials, getUserById 
-    }}>
-      {children}
-    </DataContext.Provider>
-  );
+   return lecturesToFilter
+     .filter(lecture => !lecture.instructorId)
+     .map(lecture => {
+       const course = courses.find(c => c._id === (lecture.courseId || courseId));
+       return { 
+         ...lecture, 
+         courseName: course?.name,
+         courseId: course?._id 
+       };
+     })
+     .sort((a, b) => new Date(a.date) - new Date(b.date));
+ };
+ 
+ const getAllLectures = () => {
+   return courses.flatMap(course => 
+     (course.lectures || []).map(lecture => ({ 
+       ...lecture, 
+       courseName: course.name,
+       courseId: course._id 
+     }))
+   ).sort((a, b) => new Date(a.date) - new Date(b.date));
+ };
+
+ const getInstructorsForCourse = (courseId) => {
+   const course = courses.find(c => c._id === courseId);
+   if (!course || !course.lectures) return [];
+   
+   const instructorIds = new Set(
+     course.lectures
+       .map(l => l.instructorId?._id || l.instructorId)
+       .filter(Boolean)
+   );
+   
+   return Array.from(instructorIds).map(id => getInstructorById(id)).filter(Boolean);
+ };
+
+ if (loading) {
+   return <div className="flex items-center justify-center min-h-screen">
+     <div className="text-lg">Loading data...</div>
+   </div>;
+ }
+
+ return (
+   <DataContext.Provider value={{ 
+       courses, 
+       instructors, 
+       addCourse, 
+       updateCourse, 
+       addLecture, 
+       assignLecture, 
+       getInstructorById, 
+       getCourseById, 
+       getLecturesByInstructor, 
+       getUnassignedLectures, 
+       getAllLectures, 
+       getInstructorsForCourse, 
+       addInstructor, 
+       updateInstructor,
+       fetchInitialData
+   }}>
+     {children}
+   </DataContext.Provider>
+ );
 };
 
 DataProvider.propTypes = {
-  children: PropTypes.node.isRequired,
+ children: PropTypes.node.isRequired,
 };
 
 export const useData = () => {
-  const context = useContext(DataContext);
-  if (!context) {
-    throw new Error('useData must be used within a DataProvider');
-  }
-  return context;
+ const context = useContext(DataContext);
+ if (!context) {
+   throw new Error('useData must be used within a DataProvider');
+ }
+ return context;
 };
