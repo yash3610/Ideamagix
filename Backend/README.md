@@ -322,6 +322,71 @@ const response = await fetch(`${API_URL}/courses`, {
 });
 ```
 
+## ❗ Troubleshooting
+
+### Error: "The `uri` parameter to `openUri()` must be a string, got 'undefined'"
+
+**Cause:** The `.env` file is missing or `MONGODB_URI` is not set.
+
+**Solution:**
+1. Make sure you've created the `.env` file:
+   ```bash
+   cp .env.example .env
+   ```
+2. Open `.env` and verify `MONGODB_URI` is set:
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/lecture-scheduling
+   ```
+3. If using MongoDB Atlas, use your connection string:
+   ```env
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/lecture-scheduling
+   ```
+4. Restart the server:
+   ```bash
+   npm run dev
+   ```
+
+### Error: "MongoServerError: connect ECONNREFUSED"
+
+**Cause:** MongoDB is not running or not accessible.
+
+**Solution:**
+- **For local MongoDB:** Start MongoDB service
+  ```bash
+  # macOS (with Homebrew)
+  brew services start mongodb-community
+  
+  # Linux
+  sudo systemctl start mongod
+  
+  # Windows
+  net start MongoDB
+  ```
+- **For MongoDB Atlas:** Check your connection string and network access settings
+
+### Server starts but API returns 401 Unauthorized
+
+**Cause:** Missing or invalid JWT token.
+
+**Solution:**
+1. First login to get a token:
+   ```bash
+   POST http://localhost:5000/api/auth/login
+   ```
+2. Use the returned token in subsequent requests:
+   ```
+   Authorization: Bearer <your_token_here>
+   ```
+
+### "npm run seed" fails
+
+**Cause:** Database connection issue or `.env` not configured.
+
+**Solution:**
+1. Ensure MongoDB is running
+2. Verify `.env` file exists and has correct `MONGODB_URI`
+3. Check that you can connect to MongoDB
+
 ## 📄 License
 
 ISC

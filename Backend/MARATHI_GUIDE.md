@@ -245,6 +245,73 @@ const getCourses = async () => {
 
 ---
 
+## ❗ समस्या निवारण (Troubleshooting)
+
+### Error: "The `uri` parameter to `openUri()` must be a string, got 'undefined'"
+
+**कारण:** `.env` file नाही किंवा `MONGODB_URI` set नाही.
+
+**उपाय:**
+1. `.env` file तयार करा:
+   ```bash
+   cp .env.example .env
+   ```
+2. `.env` file उघडा आणि `MONGODB_URI` तपासा:
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/lecture-scheduling
+   ```
+3. MongoDB Atlas वापरत असाल तर:
+   ```env
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/lecture-scheduling
+   ```
+4. Server restart करा:
+   ```bash
+   npm run dev
+   ```
+
+### Error: "MongoServerError: connect ECONNREFUSED"
+
+**कारण:** MongoDB चालू नाही.
+
+**उपाय:**
+- **Local MongoDB साठी:** MongoDB service start करा
+  ```bash
+  # macOS (Homebrew सह)
+  brew services start mongodb-community
+  
+  # Linux
+  sudo systemctl start mongod
+  
+  # Windows
+  net start MongoDB
+  ```
+- **MongoDB Atlas साठी:** Connection string आणि network settings तपासा
+
+### Server चालू आहे पण API 401 Unauthorized देतो
+
+**कारण:** JWT token नाही किंवा चुकीचा आहे.
+
+**उपाय:**
+1. पहिले login करा token मिळवण्यासाठी:
+   ```bash
+   POST http://localhost:5000/api/auth/login
+   ```
+2. मिळालेला token वापरा:
+   ```
+   Authorization: Bearer <your_token_here>
+   ```
+
+### "npm run seed" fail होतो
+
+**कारण:** Database connection समस्या किंवा `.env` चुकीचा आहे.
+
+**उपाय:**
+1. MongoDB चालू आहे का ते तपासा
+2. `.env` file आहे का आणि `MONGODB_URI` योग्य आहे का ते तपासा
+3. MongoDB ला connect होत आहे का ते तपासा
+
+---
+
 ## ✅ Summary
 
 तुमच्या project साठी एक **पूर्ण Backend** तयार केला आहे:
