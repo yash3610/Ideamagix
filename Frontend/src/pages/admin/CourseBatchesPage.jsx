@@ -15,7 +15,17 @@ const CourseBatchesPage = () => {
   const course = getCourseById(courseId);
   if (!course) return <div>Course not found</div>;
 
-  const courseLectures = course.lectures.sort((a,b) => new Date(a.date) - new Date(b.date));
+  // ✅ FIX: फक्त आजच्या आणि पुढच्या तारीखांचे batches दाखवा
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const courseLectures = course.lectures
+    .filter(lecture => {
+      const lectureDate = new Date(lecture.date);
+      lectureDate.setHours(0, 0, 0, 0);
+      return lectureDate >= today;
+    })
+    .sort((a,b) => new Date(a.date) - new Date(b.date));
 
   return (
     <div className="space-y-6">
@@ -33,7 +43,7 @@ const CourseBatchesPage = () => {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Existing Batches</CardTitle>
-            <CardDescription>View and manage batches for this course.</CardDescription>
+            <CardDescription>View and manage batches for this course (Today & Upcoming only).</CardDescription>
           </div>
           <Button onClick={() => setIsModalOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" /> Assign Instructor
@@ -43,10 +53,8 @@ const CourseBatchesPage = () => {
           {courseLectures.length > 0 ? (
             <div className="space-y-4">
               {courseLectures.map(lecture => {
-                // ✅ CHANGED: Handle both _id and id for lecture
                 const lectureId = lecture._id || lecture.id;
                 
-                // ✅ CHANGED: Handle both _id and id for instructorId
                 const instructorId = lecture.instructorId?._id || lecture.instructorId;
                 const assignedInstructor = instructorId ? getInstructorById(instructorId) : null;
                 
@@ -74,7 +82,7 @@ const CourseBatchesPage = () => {
             </div>
           ) : (
             <div className="text-center text-muted-foreground py-8">
-              <p>No batches have been added for this course yet.</p>
+              <p>No upcoming batches for this course.</p>
             </div>
           )}
         </CardContent>
