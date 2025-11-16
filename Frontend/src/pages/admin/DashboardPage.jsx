@@ -1,4 +1,3 @@
-cat > Frontend/src/pages/admin/DashboardPage.jsx << 'EOF'
 import React from 'react';
 import { BookOpen, Users, CalendarClock, CalendarCheck } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
@@ -84,4 +83,3 @@ const AdminDashboardPage = () => {
 };
 
 export default AdminDashboardPage;
-EOF

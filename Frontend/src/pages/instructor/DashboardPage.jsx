@@ -1,4 +1,3 @@
-cat > Frontend/src/pages/instructor/DashboardPage.jsx << 'EOF'
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { CalendarCheck, Clock } from 'lucide-react';
@@ -12,7 +11,6 @@ const InstructorDashboardPage = () => {
   const instructorId = user?._id || user?.id;
   const lectures = instructorId ? getLecturesByInstructor(instructorId) : [];
   
-  // ✅ FIX: फक्त भविष्यातले lectures
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   

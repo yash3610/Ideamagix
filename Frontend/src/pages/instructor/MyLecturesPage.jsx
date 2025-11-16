@@ -1,4 +1,3 @@
-cat > Frontend/src/pages/instructor/MyLecturesPage.jsx << 'EOF'
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -94,4 +93,3 @@ const MyLecturesPage = () => {
 };
 
 export default MyLecturesPage;
-EOF
