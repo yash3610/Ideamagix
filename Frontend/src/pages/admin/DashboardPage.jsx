@@ -1,3 +1,4 @@
+cat > Frontend/src/pages/admin/DashboardPage.jsx << 'EOF'
 import React from 'react';
 import { BookOpen, Users, CalendarClock, CalendarCheck } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
@@ -11,7 +12,16 @@ const AdminDashboardPage = () => {
   const navigate = useNavigate();
 
   const allLectures = getAllLectures();
-  const upcomingLectures = allLectures.filter(l => new Date(l.date) >= new Date());
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const upcomingLectures = allLectures.filter(l => {
+    const lectureDate = new Date(l.date);
+    lectureDate.setHours(0, 0, 0, 0);
+    return lectureDate > today;
+  });
+  
   const recentCourses = courses.slice(-4);
 
   const stats = [
@@ -38,7 +48,6 @@ const AdminDashboardPage = () => {
           {recentCourses.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
               {recentCourses.map(course => {
-                // ✅ CHANGED: Use proper course ID (MongoDB uses _id)
                 const courseId = course._id || course.id;
                 
                 return (
@@ -54,7 +63,6 @@ const AdminDashboardPage = () => {
                         <p className="text-sm text-muted-foreground">{course.level}</p>
                       </div>
                     </div>
-                    {/* ✅ CHANGED: Navigate to batches page with correct ID */}
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -76,3 +84,4 @@ const AdminDashboardPage = () => {
 };
 
 export default AdminDashboardPage;
+EOF

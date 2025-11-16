@@ -1,3 +1,4 @@
+cat > Frontend/src/pages/instructor/MyLecturesPage.jsx << 'EOF'
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -9,17 +10,19 @@ const MyLecturesPage = () => {
   const { getLecturesByInstructor } = useData();
   const [filter, setFilter] = useState('upcoming');
 
-  // ✅ CHANGED: user.id -> user._id || user.id
   const instructorId = user?._id || user?.id;
   const lectures = instructorId ? getLecturesByInstructor(instructorId) : [];
   
   const filteredLectures = lectures.filter(lecture => {
     const lectureDate = new Date(lecture.date);
+    lectureDate.setHours(0, 0, 0, 0);
+    
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
 
-    if (filter === 'upcoming') return lectureDate >= today;
-    if (filter === 'completed') return lectureDate < today;
+    if (filter === 'upcoming') return lectureDate > today;
+    if (filter === 'completed') return lectureDate <= today;
+    
     return true;
   });
 
@@ -91,3 +94,4 @@ const MyLecturesPage = () => {
 };
 
 export default MyLecturesPage;
+EOF
