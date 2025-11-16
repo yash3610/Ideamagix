@@ -8,7 +8,9 @@ const InstructorDashboardPage = () => {
   const { user } = useAuth();
   const { getLecturesByInstructor } = useData();
   
-  const lectures = user ? getLecturesByInstructor(user.id) : [];
+  // ✅ CHANGED: user.id -> user._id || user.id
+  const instructorId = user?._id || user?.id;
+  const lectures = instructorId ? getLecturesByInstructor(instructorId) : [];
   const upcomingLectures = lectures.filter(l => new Date(l.date) >= new Date());
 
   return (

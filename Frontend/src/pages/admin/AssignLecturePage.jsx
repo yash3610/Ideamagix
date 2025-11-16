@@ -14,10 +14,11 @@ const AssignLecturePage = () => {
   const allLectures = getAllLectures();
 
   const selectedLecture = useMemo(() => {
-    return unassignedLectures.find(l => l.id === selectedLectureId);
+    // ✅ CHANGED: Handle both _id and id
+    return unassignedLectures.find(l => (l._id || l.id) === selectedLectureId);
   }, [selectedLectureId, unassignedLectures]);
 
-  const handleAssign = () => {
+  const handleAssign = async () => {
     if (!selectedLectureId || !selectedInstructorId) {
       toast.error('Please select both a lecture and an instructor.');
       return;
@@ -25,21 +26,30 @@ const AssignLecturePage = () => {
 
     const lectureDate = new Date(selectedLecture.date);
 
-    // Validation: Check if the instructor already has a lecture on the selected date.
-    const hasConflict = allLectures.some(l => 
-      l.instructorId === selectedInstructorId &&
-      new Date(l.date).toDateString() === lectureDate.toDateString()
-    );
+    // ✅ CHANGED: Handle instructor ID comparison properly
+    const hasConflict = allLectures.some(l => {
+      const lectInstrId = l.instructorId?._id || l.instructorId;
+      return lectInstrId === selectedInstructorId &&
+        new Date(l.date).toDateString() === lectureDate.toDateString();
+    });
 
     if (hasConflict) {
       toast.error('Selected instructor already has a lecture assigned on this date.');
       return;
     }
 
-    assignLecture(selectedLecture.id, selectedLecture.courseId, selectedInstructorId);
-    toast.success('Lecture assigned successfully!');
-    setSelectedLectureId('');
-    setSelectedInstructorId('');
+    try {
+      // ✅ CHANGED: Use proper IDs
+      const lectureId = selectedLecture._id || selectedLecture.id;
+      const courseId = selectedLecture.courseId;
+      
+      await assignLecture(lectureId, courseId, selectedInstructorId);
+      toast.success('Lecture assigned successfully!');
+      setSelectedLectureId('');
+      setSelectedInstructorId('');
+    } catch (error) {
+      toast.error('Failed to assign lecture. Please try again.');
+    }
   };
 
   return (
@@ -58,11 +68,15 @@ const AssignLecturePage = () => {
             className="w-full p-2 border rounded-md bg-transparent"
           >
             <option value="">-- Select a Lecture --</option>
-            {unassignedLectures.map(lecture => (
-              <option key={lecture.id} value={lecture.id}>
-                {lecture.courseName} - {lecture.title}
-              </option>
-            ))}
+            {unassignedLectures.map(lecture => {
+              // ✅ CHANGED: Handle both _id and id
+              const lectureId = lecture._id || lecture.id;
+              return (
+                <option key={lectureId} value={lectureId}>
+                  {lecture.courseName} - {lecture.title}
+                </option>
+              );
+            })}
           </select>
         </div>
 
@@ -75,11 +89,15 @@ const AssignLecturePage = () => {
             className="w-full p-2 border rounded-md bg-transparent"
           >
             <option value="">-- Select an Instructor --</option>
-            {instructors.map(instructor => (
-              <option key={instructor.id} value={instructor.id}>
-                {instructor.name}
-              </option>
-            ))}
+            {instructors.map(instructor => {
+              // ✅ CHANGED: Handle both _id and id
+              const instructorId = instructor._id || instructor.id;
+              return (
+                <option key={instructorId} value={instructorId}>
+                  {instructor.name}
+                </option>
+              );
+            })}
           </select>
         </div>
 

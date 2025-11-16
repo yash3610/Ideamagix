@@ -13,17 +13,19 @@ const AssignInstructorModal = ({ isOpen, onClose, course }) => {
   const [unassignedLectures, setUnassignedLectures] = useState([]);
 
   useEffect(() => {
-    if (course) {
-      setUnassignedLectures(getUnassignedLectures(course.id));
+    if (course && isOpen) {
+      // ✅ CHANGED: Use proper course ID
+      const courseId = course._id || course.id;
+      setUnassignedLectures(getUnassignedLectures(courseId));
     }
   }, [course, getUnassignedLectures, isOpen]);
 
-
   const selectedLecture = useMemo(() => {
-    return unassignedLectures.find(l => l.id === selectedLectureId);
+    // ✅ CHANGED: Handle both _id and id
+    return unassignedLectures.find(l => (l._id || l.id) === selectedLectureId);
   }, [selectedLectureId, unassignedLectures]);
 
-  const handleAssign = () => {
+  const handleAssign = async () => {
     if (!selectedLectureId || !selectedInstructorId) {
       toast.error('Please select both a lecture and an instructor.');
       return;
@@ -32,26 +34,40 @@ const AssignInstructorModal = ({ isOpen, onClose, course }) => {
     const lectureDate = new Date(selectedLecture.date);
     const allLectures = getAllLectures();
 
-    const hasConflict = allLectures.some(l => 
-      l.instructorId === selectedInstructorId &&
-      new Date(l.date).toDateString() === lectureDate.toDateString()
-    );
+    // ✅ CHANGED: Proper instructor ID comparison
+    const hasConflict = allLectures.some(l => {
+      const lectInstrId = l.instructorId?._id || l.instructorId;
+      return lectInstrId === selectedInstructorId &&
+        new Date(l.date).toDateString() === lectureDate.toDateString();
+    });
 
     if (hasConflict) {
       toast.error('This instructor is already assigned another lecture on this date.');
       return;
     }
 
-    assignLecture(selectedLecture.id, selectedLecture.courseId, selectedInstructorId);
-    toast.success('Lecture assigned successfully!');
-    onClose();
+    try {
+      // ✅ CHANGED: Use proper IDs
+      const lectureId = selectedLecture._id || selectedLecture.id;
+      const courseId = selectedLecture.courseId || course._id || course.id;
+      
+      await assignLecture(lectureId, courseId, selectedInstructorId);
+      toast.success('Lecture assigned successfully!');
+      
+      // ✅ CHANGED: Reset selections and close modal
+      setSelectedLectureId('');
+      setSelectedInstructorId('');
+      onClose();
+    } catch (error) {
+      toast.error('Failed to assign lecture. Please try again.');
+    }
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Assign Instructor to ${course.name}`}
+      title={`Assign Instructor to ${course?.name || 'Course'}`}
       description="Select an unassigned batch and an instructor."
     >
       <div className="space-y-6">
@@ -64,13 +80,19 @@ const AssignInstructorModal = ({ isOpen, onClose, course }) => {
             className="w-full p-2 border rounded-md bg-transparent"
           >
             <option value="">-- Select a Batch --</option>
-            {unassignedLectures.map(lecture => (
-              <option key={lecture.id} value={lecture.id}>
-                {lecture.title} ({new Date(lecture.date).toLocaleDateString()})
-              </option>
-            ))}
+            {unassignedLectures.map(lecture => {
+              // ✅ CHANGED: Handle both _id and id
+              const lectureId = lecture._id || lecture.id;
+              return (
+                <option key={lectureId} value={lectureId}>
+                  {lecture.title} ({new Date(lecture.date).toLocaleDateString()})
+                </option>
+              );
+            })}
           </select>
-           {unassignedLectures.length === 0 && <p className="text-xs text-muted-foreground">No unassigned batches for this course.</p>}
+          {unassignedLectures.length === 0 && (
+            <p className="text-xs text-muted-foreground">No unassigned batches for this course.</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -82,11 +104,15 @@ const AssignInstructorModal = ({ isOpen, onClose, course }) => {
             className="w-full p-2 border rounded-md bg-transparent"
           >
             <option value="">-- Select an Instructor --</option>
-            {instructors.map(instructor => (
-              <option key={instructor.id} value={instructor.id}>
-                {instructor.name}
-              </option>
-            ))}
+            {instructors.map(instructor => {
+              // ✅ CHANGED: Handle both _id and id
+              const instructorId = instructor._id || instructor.id;
+              return (
+                <option key={instructorId} value={instructorId}>
+                  {instructor.name}
+                </option>
+              );
+            })}
           </select>
         </div>
 
@@ -98,7 +124,11 @@ const AssignInstructorModal = ({ isOpen, onClose, course }) => {
           </div>
         )}
 
-        <Button onClick={handleAssign} className="w-full" disabled={!selectedLectureId || !selectedInstructorId}>
+        <Button 
+          onClick={handleAssign} 
+          className="w-full" 
+          disabled={!selectedLectureId || !selectedInstructorId}
+        >
           Assign Instructor
         </Button>
       </div>

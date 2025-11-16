@@ -9,12 +9,14 @@ const MyLecturesPage = () => {
   const { getLecturesByInstructor } = useData();
   const [filter, setFilter] = useState('upcoming');
 
-  const lectures = user ? getLecturesByInstructor(user.id) : [];
+  // ✅ CHANGED: user.id -> user._id || user.id
+  const instructorId = user?._id || user?.id;
+  const lectures = instructorId ? getLecturesByInstructor(instructorId) : [];
   
   const filteredLectures = lectures.filter(lecture => {
     const lectureDate = new Date(lecture.date);
     const today = new Date();
-    today.setHours(0,0,0,0); // Compare dates only
+    today.setHours(0,0,0,0);
 
     if (filter === 'upcoming') return lectureDate >= today;
     if (filter === 'completed') return lectureDate < today;
@@ -23,12 +25,30 @@ const MyLecturesPage = () => {
 
   return (
     <Card>
-      <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <CardHeader>
         <CardTitle>My Lectures</CardTitle>
-        <div className="flex items-center gap-2">
-          <Button variant={filter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('all')}>All</Button>
-          <Button variant={filter === 'upcoming' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('upcoming')}>Upcoming</Button>
-          <Button variant={filter === 'completed' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('completed')}>Completed</Button>
+        <div className="flex gap-2 mt-4">
+          <Button 
+            variant={filter === 'upcoming' ? 'default' : 'outline'} 
+            onClick={() => setFilter('upcoming')}
+            size="sm"
+          >
+            Upcoming
+          </Button>
+          <Button 
+            variant={filter === 'completed' ? 'default' : 'outline'} 
+            onClick={() => setFilter('completed')}
+            size="sm"
+          >
+            Completed
+          </Button>
+          <Button 
+            variant={filter === 'all' ? 'default' : 'outline'} 
+            onClick={() => setFilter('all')}
+            size="sm"
+          >
+            All
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -36,29 +56,35 @@ const MyLecturesPage = () => {
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-muted-foreground uppercase bg-muted/50">
               <tr>
-                <th scope="col" className="px-6 py-3">Course Name</th>
-                <th scope="col" className="px-6 py-3">Lecture/Batch Title</th>
+                <th scope="col" className="px-6 py-3">Course</th>
+                <th scope="col" className="px-6 py-3">Lecture</th>
                 <th scope="col" className="px-6 py-3">Date</th>
                 <th scope="col" className="px-6 py-3">Duration</th>
               </tr>
             </thead>
             <tbody>
-              {filteredLectures.map(lecture => (
-                <tr key={lecture.id} className="border-b">
-                  <td className="px-6 py-4 font-medium">{lecture.courseName}</td>
-                  <td className="px-6 py-4">{lecture.title}</td>
-                  <td className="px-6 py-4">{new Date(lecture.date).toLocaleDateString()}</td>
-                  <td className="px-6 py-4">{lecture.duration} mins</td>
+              {filteredLectures.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-4 text-center text-muted-foreground">
+                    No lectures found
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                filteredLectures.map(lecture => {
+                  const lectureId = lecture._id || lecture.id;
+                  return (
+                    <tr key={lectureId} className="border-b">
+                      <td className="px-6 py-4 font-medium">{lecture.courseName}</td>
+                      <td className="px-6 py-4">{lecture.title}</td>
+                      <td className="px-6 py-4">{new Date(lecture.date).toLocaleDateString()}</td>
+                      <td className="px-6 py-4">{lecture.duration} mins</td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
-        {filteredLectures.length === 0 && (
-          <div className="text-center py-10 text-muted-foreground">
-            <p>No {filter} lectures found.</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

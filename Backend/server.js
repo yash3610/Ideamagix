@@ -23,8 +23,9 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ✅ CHANGED: Increase request body size limit
+app.use(express.json({ limit: '50mb' }));  // ✅ JSON साठी 50MB limit
+app.use(express.urlencoded({ limit: '50mb', extended: true }));  // ✅ URL-encoded साठी 50MB limit
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -58,7 +59,7 @@ server.on('error', (error) => {
     console.error(`   2. Change the port in .env file:`);
     console.error('      PORT=3000');
     console.error('   3. Use a different port:');
-    console.error('      PORT=3000 npm run dev\n');
+    console.error(`      PORT=3000 npm run dev\n`);
     process.exit(1);
   } else {
     console.error('Server error:', error);

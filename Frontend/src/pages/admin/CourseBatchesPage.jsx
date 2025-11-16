@@ -43,12 +43,20 @@ const CourseBatchesPage = () => {
           {courseLectures.length > 0 ? (
             <div className="space-y-4">
               {courseLectures.map(lecture => {
-                const assignedInstructor = lecture.instructorId ? getInstructorById(lecture.instructorId) : null;
+                // ✅ CHANGED: Handle both _id and id for lecture
+                const lectureId = lecture._id || lecture.id;
+                
+                // ✅ CHANGED: Handle both _id and id for instructorId
+                const instructorId = lecture.instructorId?._id || lecture.instructorId;
+                const assignedInstructor = instructorId ? getInstructorById(instructorId) : null;
+                
                 return (
-                  <div key={lecture.id} className="border p-4 rounded-lg flex justify-between items-center">
+                  <div key={lectureId} className="border p-4 rounded-lg flex justify-between items-center">
                     <div>
                       <p className="font-semibold">{lecture.title}</p>
-                      <p className="text-sm text-muted-foreground">{new Date(lecture.date).toLocaleDateString()} - {lecture.duration} mins</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(lecture.date).toLocaleDateString()} - {lecture.duration} mins
+                      </p>
                     </div>
                     {assignedInstructor ? (
                       <div className="flex items-center gap-2 text-sm font-medium">
@@ -56,7 +64,9 @@ const CourseBatchesPage = () => {
                         <span>{assignedInstructor.name}</span>
                       </div>
                     ) : (
-                      <span className="text-xs font-semibold px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">Unassigned</span>
+                      <span className="text-xs font-semibold px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">
+                        Unassigned
+                      </span>
                     )}
                   </div>
                 );

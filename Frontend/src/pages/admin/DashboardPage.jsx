@@ -37,20 +37,34 @@ const AdminDashboardPage = () => {
         <CardContent>
           {recentCourses.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {recentCourses.map(course => (
-                <div key={course.id} className="border rounded-lg p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <img src={course.imageUrl} alt={course.name} className="h-16 w-16 object-cover rounded-md"/>
-                    <div>
-                      <p className="font-semibold">{course.name}</p>
-                      <p className="text-sm text-muted-foreground">{course.level}</p>
+              {recentCourses.map(course => {
+                // ✅ CHANGED: Use proper course ID (MongoDB uses _id)
+                const courseId = course._id || course.id;
+                
+                return (
+                  <div key={courseId} className="border rounded-lg p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <img 
+                        src={course.imageUrl} 
+                        alt={course.name} 
+                        className="h-16 w-16 object-cover rounded-md"
+                      />
+                      <div>
+                        <p className="font-semibold">{course.name}</p>
+                        <p className="text-sm text-muted-foreground">{course.level}</p>
+                      </div>
                     </div>
+                    {/* ✅ CHANGED: Navigate to batches page with correct ID */}
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => navigate(`/admin/courses/${courseId}`)}
+                    >
+                      View
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => navigate(`/admin/courses/${course.id}`)}>
-                    View
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-4">No courses added yet.</p>

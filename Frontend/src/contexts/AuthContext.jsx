@@ -23,7 +23,8 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const userData = await apiCall('/users/profile');
+      // ✅ CHANGED: Use correct endpoint /auth/me
+      const userData = await apiCall('/auth/me');
       setUser(userData);
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -51,6 +52,9 @@ export const AuthProvider = ({ children }) => {
       
       // Show success message
       toast.success(`Welcome back, ${userData.name}!`);
+      
+      // ✅ CHANGED: Trigger a custom event to refresh data
+      window.dispatchEvent(new Event('user-logged-in'));
       
       // Navigate based on role
       if (userData.role === 'admin') {
@@ -89,6 +93,10 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     removeToken();
     localStorage.removeItem('user');
+    
+    // ✅ CHANGED: Trigger event to clear data
+    window.dispatchEvent(new Event('user-logged-out'));
+    
     toast.success('Logged out successfully');
     navigate('/login');
   };
