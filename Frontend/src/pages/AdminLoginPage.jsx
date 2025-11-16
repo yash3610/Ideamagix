@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/Card';
+import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const AdminLoginPage = () => {
-  const [email, setEmail] = useState('admin@test.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = (e) => {
@@ -29,27 +31,37 @@ const AdminLoginPage = () => {
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="space-y-2">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email" className="text-sm font-medium">Email</label>
               <input 
                 id="email" 
                 type="email" 
-                placeholder="admin@example.com" 
+                placeholder="admin@ideamagix.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border rounded-md bg-transparent"
+                className="w-full p-2 border rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                 required 
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password">Password</label>
-              <input 
-                id="password" 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 border rounded-md bg-transparent"
-                required 
-              />
+              <label htmlFor="password" className="text-sm font-medium">Password</label>
+              <div className="relative">
+                <input 
+                  id="password" 
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full p-2 pr-10 border rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                  required 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">

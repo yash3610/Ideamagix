@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/Card';
 import ImageUpload from '../components/ui/ImageUpload.jsx';
+import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const InstructorSignupPage = () => {
@@ -11,6 +12,8 @@ const InstructorSignupPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const { signup } = useAuth();
@@ -24,6 +27,11 @@ const InstructorSignupPage = () => {
       return;
     }
     
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters long.');
+      return;
+    }
+    
     if (!name || !email || !password) {
       toast.error('Please fill in all required fields.');
       return;
@@ -32,7 +40,6 @@ const InstructorSignupPage = () => {
     setLoading(true);
     try {
       await signup({ name, email, password, avatarUrl });
-      // Navigate to login page after successful signup
       navigate('/login');
     } catch (error) {
       console.error('Signup error:', error);
@@ -51,50 +58,74 @@ const InstructorSignupPage = () => {
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="space-y-2">
-              <label htmlFor="name">Full Name</label>
+              <label htmlFor="name" className="text-sm font-medium">Full Name</label>
               <input 
-                id="name" 
+                id="name"
+                type="text"
+                placeholder="John Doe"
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
-                className="w-full p-2 border rounded-md bg-transparent" 
+                className="w-full p-2 border rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary" 
                 required 
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email" className="text-sm font-medium">Email</label>
               <input 
                 id="email" 
-                type="email" 
+                type="email"
+                placeholder="john@ideamagix.com"
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
-                className="w-full p-2 border rounded-md bg-transparent" 
+                className="w-full p-2 border rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary" 
                 required 
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password">Password</label>
-              <input 
-                id="password" 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                className="w-full p-2 border rounded-md bg-transparent" 
-                required 
-              />
+              <label htmlFor="password" className="text-sm font-medium">Password</label>
+              <div className="relative">
+                <input 
+                  id="password" 
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a password (min 6 characters)"
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  className="w-full p-2 pr-10 border rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary" 
+                  required 
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             <div className="space-y-2">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input 
-                id="confirmPassword" 
-                type="password" 
-                value={confirmPassword} 
-                onChange={(e) => setConfirmPassword(e.target.value)} 
-                className="w-full p-2 border rounded-md bg-transparent" 
-                required 
-              />
+              <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</label>
+              <div className="relative">
+                <input 
+                  id="confirmPassword" 
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Re-enter your password"
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  className="w-full p-2 pr-10 border rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary" 
+                  required 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             <div className="space-y-2">
-              <label>Profile Picture (Optional)</label>
+              <label className="text-sm font-medium">Profile Picture (Optional)</label>
               <ImageUpload onImageUpload={setAvatarUrl} />
             </div>
           </CardContent>
