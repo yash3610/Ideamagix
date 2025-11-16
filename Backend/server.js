@@ -20,8 +20,10 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// ✅ INCREASE PAYLOAD SIZE LIMIT (for image uploads)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Request logging middleware (development only)
 if (process.env.NODE_ENV === 'development') {
@@ -39,6 +41,7 @@ app.use('/api/users', userRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
+  const mongoose = require('mongoose');
   res.json({ 
     status: 'OK', 
     message: 'Server is running',
@@ -73,6 +76,15 @@ app.use((req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
+  
+  // Handle payload too large error
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      message: 'File size too large. Maximum allowed size is 50MB.',
+      error: 'PAYLOAD_TOO_LARGE'
+    });
+  }
+  
   res.status(err.status || 500).json({
     message: err.message || 'Internal Server Error',
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
@@ -88,6 +100,7 @@ const server = app.listen(PORT, () => {
   console.log(`📡 Server URL: http://localhost:${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
   console.log(`💾 Database: MongoDB Atlas`);
+  console.log(`📦 Max Upload Size: 50MB`);
   console.log(`⏰ Started at: ${new Date().toLocaleString()}`);
   console.log('='.repeat(50) + '\n');
 });
