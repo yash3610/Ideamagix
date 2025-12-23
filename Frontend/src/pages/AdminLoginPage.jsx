@@ -67,6 +67,9 @@ const AdminLoginPage = () => {
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full">Login</Button>
             <p className="text-xs text-muted-foreground">
+              Admin Email Id is "admin@ideamagix.com"
+            </p>
+            <p className="text-xs text-muted-foreground">
               Admin Pass is "admin@123"
             </p>
             <p className="text-xs text-muted-foreground">
