@@ -70,7 +70,7 @@ const AdminLoginPage = () => {
               Admin Email Id is "admin@ideamagix.com"
             </p>
             <p className="text-xs text-muted-foreground">
-              Admin Pass is "admin@123"
+              Admin Pass is "admin123"
             </p>
             <p className="text-xs text-muted-foreground">
               Not an admin? <Link to="/login" className="text-primary hover:underline">Login as Instructor</Link>
