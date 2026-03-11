@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext.jsx';
+import LandingPage from './pages/LandingPage.jsx';
 import PropTypes from 'prop-types';
 
 import MainLayout from './components/layout/MainLayout.jsx';
@@ -62,6 +63,9 @@ function App() {
 
   return (
     <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<LandingPage />} />
+
       {/* Auth Routes */}
       <Route path="/login" element={<InstructorLoginPage />} />
       <Route path="/login/admin" element={<AdminLoginPage />} />
