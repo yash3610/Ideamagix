@@ -17,7 +17,8 @@ import EditCoursePage from './pages/admin/EditCoursePage.jsx';
 import CourseBatchesPage from './pages/admin/CourseBatchesPage.jsx';
 import AssignLecturePage from './pages/admin/AssignLecturePage.jsx';
 import AllLecturesPage from './pages/admin/AllLecturesPage.jsx';
-import { LayoutDashboard, Users, Book, PlusCircle, CalendarPlus, ListTodo } from 'lucide-react';
+import SubscriptionsPage from './pages/admin/SubscriptionsPage.jsx';
+import { LayoutDashboard, Users, Book, PlusCircle, CalendarPlus, ListTodo, CreditCard } from 'lucide-react';
 
 // Instructor Imports
 import InstructorDashboardPage from './pages/instructor/DashboardPage.jsx';
@@ -25,8 +26,13 @@ import MyLecturesPage from './pages/instructor/MyLecturesPage.jsx';
 import ProfilePage from './pages/instructor/ProfilePage.jsx';
 import { UserSquare } from 'lucide-react';
 
+// Washer Imports
+import WasherDashboardPage from './pages/washer/DashboardPage.jsx';
+import { Droplets } from 'lucide-react';
+
 const adminNavItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { href: '/admin/courses', label: 'Manage Courses', icon: Book },
   { href: '/admin/add-course', label: 'Add Course', icon: PlusCircle },
   { href: '/admin/instructors', label: 'All Instructors', icon: Users },
@@ -40,6 +46,10 @@ const instructorNavItems = [
   { href: '/instructor/profile', label: 'Profile', icon: UserSquare },
 ];
 
+const washerNavItems = [
+  { href: '/washer/dashboard', label: 'My Jobs', icon: Droplets },
+];
+
 const ProtectedRoute = ({ role, children }) => {
   const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) {
@@ -47,13 +57,15 @@ const ProtectedRoute = ({ role, children }) => {
     return <Navigate to={loginPath} replace />;
   }
   if (user?.role !== role) {
-    return <Navigate to={user?.role === 'admin' ? '/admin' : '/instructor'} replace />;
+    if (user?.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
+    if (user?.role === 'washer') return <Navigate to="/washer/dashboard" replace />;
+    return <Navigate to="/instructor/dashboard" replace />;
   }
   return <>{children}</>;
 };
 
 ProtectedRoute.propTypes = {
-  role: PropTypes.oneOf(['admin', 'instructor']).isRequired,
+  role: PropTypes.oneOf(['admin', 'instructor', 'washer']).isRequired,
   children: PropTypes.node.isRequired,
 };
 
@@ -66,7 +78,7 @@ function App() {
       <Route path="/login" element={<InstructorLoginPage />} />
       <Route path="/login/admin" element={<AdminLoginPage />} />
       <Route path="/signup" element={<InstructorSignupPage />} />
-      
+
       {/* Admin Routes */}
       <Route path="/admin" element={
         <ProtectedRoute role="admin">
@@ -75,6 +87,7 @@ function App() {
       }>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
+        <Route path="subscriptions" element={<SubscriptionsPage />} />
         <Route path="instructors" element={<AllInstructorsPage />} />
         <Route path="courses" element={<ManageCoursesPage />} />
         <Route path="add-course" element={<AddCoursePage />} />
@@ -96,19 +109,33 @@ function App() {
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
-      {/* Fallback Route - ✅ FIXED */}
-      <Route 
-        path="*" 
+      {/* Washer Routes */}
+      <Route path="/washer" element={
+        <ProtectedRoute role="washer">
+          <MainLayout navItems={washerNavItems} />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<WasherDashboardPage />} />
+      </Route>
+
+      {/* Fallback Route */}
+      <Route
+        path="*"
         element={
-          <Navigate 
+          <Navigate
             to={
-              isAuthenticated && user 
-                ? (user.role === 'admin' ? '/admin/dashboard' : '/instructor/dashboard')
+              isAuthenticated && user
+                ? (user.role === 'admin'
+                    ? '/admin/dashboard'
+                    : user.role === 'washer'
+                      ? '/washer/dashboard'
+                      : '/instructor/dashboard')
                 : '/login'
-            } 
-            replace 
+            }
+            replace
           />
-        } 
+        }
       />
     </Routes>
   );

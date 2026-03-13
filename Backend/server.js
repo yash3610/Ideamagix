@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes.js';
 import courseRoutes from './routes/course.routes.js';
 import lectureRoutes from './routes/lecture.routes.js';
 import userRoutes from './routes/user.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/lectures', lectureRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
