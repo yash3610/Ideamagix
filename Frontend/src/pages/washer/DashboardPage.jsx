@@ -108,7 +108,7 @@ const WasherDashboardPage = () => {
                     <span className="text-muted-foreground">
                       {new Date(job.createdAt).toLocaleDateString('en-IN')}
                     </span>
-                    <span className="font-semibold text-primary text-sm">₹{job.planPrice}/mo</span>
+                    <span className="font-semibold text-primary text-sm">₹{job.planPrice}/month</span>
                   </div>
                 </div>
               ))}
