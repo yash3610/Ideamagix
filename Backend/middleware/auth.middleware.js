@@ -46,3 +46,11 @@ export const instructor = (req, res, next) => {
     res.status(403).json({ message: 'Not authorized as instructor' });
   }
 };
+
+export const washer = (req, res, next) => {
+  if (req.user && req.user.role === 'washer') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Not authorized as washer' });
+  }
+};

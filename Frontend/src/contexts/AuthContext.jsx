@@ -59,6 +59,8 @@ export const AuthProvider = ({ children }) => {
       // Navigate based on role
       if (userData.role === 'admin') {
         navigate('/admin/dashboard');
+      } else if (userData.role === 'washer') {
+        navigate('/washer/dashboard');
       } else {
         navigate('/instructor/dashboard');
       }
